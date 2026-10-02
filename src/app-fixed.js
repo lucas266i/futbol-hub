@@ -1,12 +1,15 @@
 import { confederations, federations } from "./data.js";
+import { missingFifaMembers, nonFifaEntries } from "./fifa-missing.js";
 
 const app = document.querySelector("#app");
 const state = { search: "", continent: "Todos" };
 const FIFA_MEMBERS = "https://inside.fifa.com/es/associations";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const allMembers = [...federations.filter(x => !nonFifaEntries.has(x.country)), ...missingFifaMembers]
+  .filter((x,i,a)=>a.findIndex(y=>y.country===x.country)===i);
 
 function render() {
-  const filtered = federations
+  const filtered = allMembers
     .filter(x => state.continent === "Todos" || x.continent === state.continent)
     .filter(x => (x.country + " " + x.name).toLowerCase().includes(state.search.toLowerCase()))
     .sort((a,b)=>a.country.localeCompare(b.country,"es"));
@@ -24,12 +27,12 @@ function render() {
     </aside>
     <main>
       <header class="hero"><p class="kicker">DIRECTORIO OFICIAL DE ENLACES</p><h1>Directorio Mundial del Fútbol</h1><p class="lead">FIFA, confederaciones y federaciones nacionales en un solo lugar.</p></header>
-      <section class="stats"><div><strong>${federations.length}</strong><span>Registros cargados</span></div><div><strong>${confederations.length}</strong><span>Confederaciones</span></div><div><strong>211</strong><span>Miembros FIFA oficiales</span></div></section>
+      <section class="stats"><div><strong>${allMembers.length}</strong><span>Miembros FIFA cargados</span></div><div><strong>${confederations.length}</strong><span>Confederaciones</span></div><div><strong>211</strong><span>Miembros FIFA oficiales</span></div></section>
       <section class="quick">${confederations.map(c=>`<a href="${c.url}" target="_blank" rel="noopener" class="quick-card"><b>${esc(c.code)}</b><span>${esc(c.region)}</span>↗</a>`).join("")}</section>
       <section class="sourcebar"><span>Fuente maestra: FIFA</span><a href="${FIFA_MEMBERS}" target="_blank" rel="noopener">Ver directorio oficial de 211 asociaciones ↗</a></section>
       <section class="toolbar"><input id="search" placeholder="Buscar país o federación…" value="${esc(state.search)}" /><select id="continent"><option>Todos</option>${confederations.map(c=>`<option ${state.continent===c.region?"selected":""}>${esc(c.region)}</option>`).join("")}</select><div class="count">${filtered.length} resultados</div></section>
       <section class="table-card"><div class="table-head"><span>PAÍS</span><span>FEDERACIÓN</span><span>CONFEDERACIÓN</span><span>ENLACES</span></div><div>${filtered.map(x=>`<div class="row"><div><strong>${esc(x.country)}</strong><small>${esc(x.code)}</small></div><div>${esc(x.name)}</div><div>${esc(x.confederation)}</div><div class="actions">${x.website?`<a href="${x.website}" target="_blank" rel="noopener">Sitio oficial ↗</a>`:"—"}<a href="${x.fifa}" target="_blank" rel="noopener">FIFA ↗</a></div></div>`).join("")}</div></section>
-      <footer>Fútbol Hub · directorio de enlaces · ${new Date().getFullYear()}</footer>
+      <footer>Fútbol Hub · directorio de enlaces oficiales · ${new Date().getFullYear()}</footer>
     </main>
   </div>`;
   document.querySelector("#search").addEventListener("input", e => { state.search=e.target.value; render(); });
