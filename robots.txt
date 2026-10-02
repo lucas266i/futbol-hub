@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lucas266i.github.io/futbol-hub/sitemap.xml
